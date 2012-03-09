@@ -30,11 +30,15 @@ install_version() {
     download_version $1
   fi
   verify_md5 $1
+  delete_existing_src_dir $1
+  untar_file $1
+  compile $1
+}
+
+delete_existing_src_dir() {
   if [ -d "$PVM_ROOT/srcs/php-$1" ] ; then
     rm -rf "$PVM_ROOT/srcs/php-$1"
   fi
-  untar_file $1
-  compile $1
 }
 
 verify_md5() {
