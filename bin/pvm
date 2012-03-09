@@ -70,7 +70,11 @@ untar_file() {
 
 compile() {
   cd "$PVM_ROOT/srcs/php-$1"
-  CONFIG=$(cat "$PVM_ROOT/config/config-parameters")
+  if [ -e "$HOME/.pvm-config" ] ; then
+    CONFIG=$(cat "$HOME/.pvm-config")
+  else
+    CONFIG=$(cat "$PVM_ROOT/config/default-config-parameters")
+  fi
   ./configure --prefix="$PVM_ROOT/phps/php-$1" $CONFIG
   make install
   if [ $? -gt 0 ]; then
