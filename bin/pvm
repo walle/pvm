@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+
+PVM_VERSION="0.1.0"
+
+list() {
+  ls $PVM_PHPS_ROOT | sort
+}
+
+versions() {
+  cat "$PVM_ROOT/config/known" | cut -d '.' -f 1-3 | cut -d '-' -f 2
+}
+
+usage() {
+  pvm_version
+  echo "usage: pvm <command> [<args>]"
+  echo ""
+  echo "   list      List all installed PHP versions"
+  echo "   versions      List all known PHP versions"
+  echo "   install      Install selected PHP version"
+}
+
+pvm_version() {
+  echo "pvm $PVM_VERSION"
+}
+
+install_version() {
+  if ! tar_exists $1 ; then
+    download_version $1
+  fi
+  verify_md5 $1
+  untar_file $1
+  compile $1
+}
+
+verify_md5() {
+  KNOWN_MD5=$(grep $1 "$PVM_ROOT/config/known" | cut -d '=' -f 2)
+  MD5=$(md5sum "$PVM_ROOT/tars/php-$1.tar.gz" | cut -d ' ' -f 1)
+  if [ "$MD5" != "$KNOWN_MD5" ] ; then
+    echo "MD5 mismatch, try to download the file again!"
+    exit 1
+  fi
+}
+
+tar_exists() {
+  if [ -e "$PVM_ROOT/tars/php-$1.tar.gz" ] ; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+download_version() {
+  if versions | grep -q $1 ; then
+    download_tar $1
+  else
+    usage
+    exit 1
+  fi
+}
+
+untar_file() {
+  tar xvfz "$PVM_ROOT/tars/php-$1.tar.gz" -C "$PVM_ROOT/srcs"
+}
+
+compile() {
+  cd "$PVM_ROOT/srcs/php-$1"
+  CONFIG=$(cat "$PVM_ROOT/config/config-parameters")
+  echo ./configure --prefix="$PVM_ROOT/phps/php-$1" $CONFIG
+  sudo make install
+
+  verify_install $1
+}
+
+verify_install() {
+  HELLO=$($PVM_ROOT/phps/php-$1/bin/php "$PVM_ROOT/test/test.php")
+  echo $HELLO
+  if [ "Hello $1" != "$HELLO" ] ; then
+    echo "Something went wrong with install!"
+    exit 1
+  fi
+}
+
+download_tar() {
+  wget -O "tars/php-$1.tar.gz" "http://php.net/get/php-$1.tar.gz/from/this/mirror"
+}
+
+bootstrap() {
+  hash wget tar 2>&- && return
+  echo "You don't seem to have the necessary prerequisites for running pvm."
+  echo ""
+  echo "Please make sure you have the following:"
+  echo "   * wget"
+  echo "   * tar"
+
+  exit 1
+}
+
+DEBUG=true
+
+if $DEBUG ; then
+  PVM_ROOT=$(pwd)
+else
+  PVM_ROOT="$HOME/.pvm"
+fi
+
+PVM_PHPS_ROOT="$PVM_ROOT/phps"
+
+bootstrap
+
+case $1 in
+  "list" )
+    list
+    ;;
+  "versions" )
+    versions
+    ;;
+  "install" )
+    install_version $2
+    ;;
+  "verify" )
+    verify_install $2
+    ;;
+  "--version" )
+    pvm_version
+    ;;
+  "" | "-h" | "--help" )
+    usage
+    ;;
+  *)
+esac
+
+exit 0

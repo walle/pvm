@@ -1,0 +1,3 @@
+h1. PHP Version Manager
+
+pvm is a utility to manage multiple php versions. Inspired by rvm.

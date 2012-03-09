@@ -1,0 +1,7 @@
+--enable-mysqlnd --with-apxs2=/usr/local/apache2/bin/apxs
+ --disable-ipv6 --with-openssl --with-zlib --enable-bcmath --with-bz2
+ --with-curl --enable-exif --enable-ftp --with-gd --enable-gd-native-ttf
+ --with-imap-ssl  --with-ldap --enable-mbstring --with-mcrypt
+ --with-mhash --with-mysql --with-mysqli  --enable-pcntl
+ --with-pdo-mysql --with-pdo-sqlite --enable-shmop  --enable-soap
+ --enable-sockets --with-xmlrpc --with-xsl
