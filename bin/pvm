@@ -30,6 +30,9 @@ install_version() {
     download_version $1
   fi
   verify_md5 $1
+  if [ -d "$PVM_ROOT/srcs/php-$1" ] ; then
+    rm -rf "$PVM_ROOT/srcs/php-$1"
+  fi
   untar_file $1
   compile $1
 }
