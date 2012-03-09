@@ -2,6 +2,8 @@
 
 PVM_VERSION="0.1.0"
 
+OS=$(uname -s)
+
 list() {
   ls $PVM_PHPS_ROOT | sort
 }
@@ -33,8 +35,12 @@ install_version() {
 }
 
 verify_md5() {
+  MD5_COMMAND="md5sum $PVM_ROOT/tars/php-$1.tar.gz | cut -d ' ' -f 1"
+  if [ "$OS" == "Darwin" ] ; then
+    MD5_COMMAND="md5 $PVM_ROOT/tars/php-$1.tar.gz | cut -d ' ' -f 4"
+  fi
   KNOWN_MD5=$(grep $1 "$PVM_ROOT/config/known" | cut -d '=' -f 2)
-  MD5=$(md5sum "$PVM_ROOT/tars/php-$1.tar.gz" | cut -d ' ' -f 1)
+  MD5=$(eval "$MD5_COMMAND")
   if [ "$MD5" != "$KNOWN_MD5" ] ; then
     echo "MD5 mismatch, try to download the file again!"
     exit 1
