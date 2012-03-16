@@ -116,6 +116,13 @@ use() {
     exit 0
   fi
 
+  if [[ ! -d $PVM_ROOT/phps/php-$1 ]] ; then
+    echo "You don't have php-$1 installed!"
+    echo "Install it with:"
+    echo "\$ pvm install $1"
+    exit 1
+  fi
+
   BINS=$(ls $PVM_ROOT/phps/php-$1/bin)
 
   for bin in ${BINS[@]}
