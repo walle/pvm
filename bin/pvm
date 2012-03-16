@@ -4,8 +4,15 @@ PVM_VERSION="0.1.0"
 
 OS=$(uname -s)
 
+HAS_APACHE=false
+
+BIN_DIR=/usr/bin/
+
 list() {
   ls $PVM_PHPS_ROOT | sort
+  if [[ -d $PVM_ROOT/original/ ]] ; then
+    echo "original"
+  fi
 }
 
 versions() {
@@ -16,9 +23,10 @@ usage() {
   pvm_version
   echo "usage: pvm <command> [<args>]"
   echo ""
-  echo "   list      List all installed PHP versions"
-  echo "   versions      List all known PHP versions"
+  echo "   list         List all installed PHP versions"
+  echo "   versions     List all known PHP versions"
   echo "   install      Install selected PHP version"
+  echo "   use          Use selected PHP version"
 }
 
 pvm_version() {
@@ -30,15 +38,8 @@ install_version() {
     download_version $1
   fi
   verify_md5 $1
-  delete_existing_src_dir $1
   untar_file $1
   compile $1
-}
-
-delete_existing_src_dir() {
-  if [ -d "$PVM_ROOT/srcs/php-$1" ] ; then
-    rm -rf "$PVM_ROOT/srcs/php-$1"
-  fi
 }
 
 verify_md5() {
@@ -77,15 +78,19 @@ untar_file() {
 
 compile() {
   cd "$PVM_ROOT/srcs/php-$1"
-  if [ -e "$HOME/.pvm-config" ] ; then
-    CONFIG=$(cat "$HOME/.pvm-config")
-  else
-    CONFIG=$(cat "$PVM_ROOT/config/default-config-parameters")
+  CONFIG=$(cat "$PVM_ROOT/config/config-parameters")
+
+  if [[ "$CONFIG" =~ --with-apxs2 ]] ; then
+    $HAS_APACHE=true
   fi
+
   ./configure --prefix="$PVM_ROOT/phps/php-$1" $CONFIG
-  make install
-  if [ $? -gt 0 ]; then
+
+  if [[ $HAS_APACHE == true ]] ; then
     sudo make install
+    ## TODO: Move libphp5.so to the correct php dir and link it back
+  else
+    make install
   fi
 
   verify_install $1
@@ -98,6 +103,38 @@ verify_install() {
     echo "Something went wrong with install!"
     exit 1
   fi
+}
+
+use() {
+  if [[ "$1" == "original" ]] ; then
+    if [[ ! -d $PVM_ROOT/original/ ]] ; then
+      echo "You haven't saved a original install"
+      exit 1
+    fi
+    sudo mv -f $PVM_ROOT/original/* $BIN_DIR/
+    rmdir $PVM_ROOT/original
+    exit 0
+  fi
+
+  BINS=$(ls $PVM_ROOT/phps/php-$1/bin)
+
+  for bin in ${BINS[@]}
+  do
+    if [[ -f "$BIN_DIR/$bin" ]] ; then
+      if [[ ! -d $PVM_ROOT/original/ ]] ; then
+        mkdir $PVM_ROOT/original/
+      fi
+      if [[ ! -h "$BIN_DIR/$bin" ]] ; then
+        sudo mv $BIN_DIR/$bin $PVM_ROOT/original/
+      else
+        sudo unlink $BIN_DIR/$bin
+      fi
+    fi
+  done
+
+  sudo ln -s $PVM_ROOT/phps/php-$1/bin/* $BIN_DIR/
+
+  ## TODO: Use correct libphp5.so in apache modules
 }
 
 download_tar() {
@@ -139,6 +176,9 @@ case $1 in
     ;;
   "verify" )
     verify_install $2
+    ;;
+  "use" )
+    use $2
     ;;
   "--version" )
     pvm_version
