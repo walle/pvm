@@ -1,0 +1,89 @@
+#! /bin/sh
+
+SED="/bin/sed"
+prefix="/usr"
+exec_prefix="${prefix}"
+version="5.3.10"
+vernum="50310"
+include_dir="${prefix}/include/php"
+includes="-I$include_dir -I$include_dir/main -I$include_dir/TSRM -I$include_dir/Zend -I$include_dir/ext -I$include_dir/ext/date/lib"
+ldflags=""
+libs="-lcrypt   -lresolv -lcrypt -lreadline -lncurses -lz -lpcre -lrt -lm -ldl -lnsl  -lxml2 -lz -lm -lxml2 -lz -lm -lxml2 -lz -lm -lcrypt -lxml2 -lz -lm -lxml2 -lz -lm -lxml2 -lz -lm -lcrypt "
+extension_dir='/usr/lib/php/modules'
+man_dir=`eval echo /usr/share/man`
+program_prefix=""
+program_suffix=""
+exe_extension=""
+php_cli_binary=NONE
+php_cgi_binary=NONE
+configure_options=" '--srcdir=../php-5.3.10' '--prefix=/usr' '--sysconfdir=/etc/php' '--localstatedir=/var' '--with-layout=GNU' '--with-config-file-path=/etc/php' '--with-config-file-scan-dir=/etc/php/conf.d' '--enable-inline-optimization' '--disable-debug' '--disable-rpath' '--disable-static' '--enable-shared' '--mandir=/usr/share/man' '--without-pear' '--disable-cgi' '--with-readline' '--enable-pcntl' '--enable-bcmath=shared' '--enable-calendar=shared' '--enable-dba=shared' '--enable-exif=shared' '--enable-ftp=shared' '--enable-gd-native-ttf' '--enable-intl=shared' '--enable-json=shared' '--enable-mbregex' '--enable-mbstring' '--enable-pdo' '--enable-phar=shared' '--enable-posix=shared' '--enable-session' '--enable-shmop=shared' '--enable-soap=shared' '--enable-sockets=shared' '--enable-sqlite-utf8' '--enable-sysvmsg=shared' '--enable-sysvsem=shared' '--enable-sysvshm=shared' '--enable-xml' '--enable-zip=shared' '--with-bz2=shared' '--with-curl=shared' '--with-db4=/usr' '--with-enchant=shared,/usr' '--with-freetype-dir=shared,/usr' '--with-gd=shared' '--with-gdbm=shared' '--with-gettext=shared' '--with-gmp=shared' '--with-iconv=shared' '--with-icu-dir=/usr' '--with-imap-ssl=shared' '--with-imap=shared' '--with-jpeg-dir=shared,/usr' '--with-ldap=shared' '--with-ldap-sasl' '--with-mcrypt=shared' '--with-mhash' '--with-mssql=shared' '--with-mysql-sock=/var/run/mysqld/mysqld.sock' '--with-mysql=shared,mysqlnd' '--with-mysqli=shared,mysqlnd' '--with-openssl=shared' '--with-pcre-regex=/usr' '--with-pdo-mysql=shared,mysqlnd' '--with-pdo-odbc=shared,unixODBC,/usr' '--with-pdo-pgsql=shared' '--with-pdo-sqlite=shared,/usr' '--with-pgsql=shared' '--with-png-dir=shared,/usr' '--with-pspell=shared' '--with-regex=php' '--with-snmp=shared' '--with-sqlite3=shared,/usr' '--with-sqlite=shared' '--with-tidy=shared' '--with-unixODBC=shared,/usr' '--with-xmlrpc=shared' '--with-xsl=shared' '--with-zlib' '--without-db2' '--without-db3'"
+php_sapis="cli cli"
+
+# Set php_cli_binary and php_cgi_binary if available
+for sapi in $php_sapis; do
+  case $sapi in
+  cli)
+    php_cli_binary="${exec_prefix}/bin/${program_prefix}php${program_suffix}${exe_extension}"
+    ;;
+  cgi)
+    php_cgi_binary="${exec_prefix}/bin/${program_prefix}php-cgi${program_suffix}${exe_extension}"
+    ;;
+  esac
+done
+
+# Determine which (if any) php binary is available
+if test "$php_cli_binary" != "NONE"; then
+  php_binary="$php_cli_binary"
+else
+  php_binary="$php_cgi_binary"
+fi
+
+# Remove quotes
+configure_options=`echo $configure_options | $SED -e "s#'##g"`
+
+case "$1" in
+--prefix)
+  echo $prefix;;
+--includes)
+  echo $includes;;
+--ldflags)
+  echo $ldflags;;
+--libs)
+  echo $libs;;
+--extension-dir)
+  echo $extension_dir;;
+--include-dir)
+  echo $include_dir;;
+--php-binary)
+  echo $php_binary;;
+--php-sapis)
+  echo $php_sapis;;
+--configure-options)
+  echo $configure_options;;
+--man-dir)
+  echo $man_dir;;
+--version)
+  echo $version;;
+--vernum)
+  echo $vernum;;
+*)
+  cat << EOF
+Usage: $0 [OPTION]
+Options:
+  --prefix            [$prefix]
+  --includes          [$includes]
+  --ldflags           [$ldflags]
+  --libs              [$libs]
+  --extension-dir     [$extension_dir]
+  --include-dir       [$include_dir]
+  --man-dir           [$man_dir]
+  --php-binary        [$php_binary]
+  --php-sapis         [$php_sapis]
+  --configure-options [$configure_options]
+  --version           [$version]
+  --vernum            [$vernum]
+EOF
+  exit 1;;
+esac
+
+exit 0

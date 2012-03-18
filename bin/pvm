@@ -78,9 +78,10 @@ untar_file() {
 
 compile() {
   cd "$PVM_ROOT/srcs/php-$1"
-  CONFIG=$(cat "$PVM_ROOT/config/config-parameters")
+  CONFIG=$(cat "$PVM_ROOT/config/default-config-parameters")
 
-  if [[ "$CONFIG" =~ --with-apxs2 ]] ; then
+  echo "$CONFIG"
+  if [[ "$CONFIG" =~ "apxs2" ]] ; then
     $HAS_APACHE=true
   fi
 

@@ -1,3 +1,15 @@
 h1. PHP Version Manager
 
 pvm is a utility to manage multiple php versions. Inspired by rvm.
+
+h2. ALPHA
+
+pvm is in alpha, don't use it on any machines that have important php installation on them. pvm tries to save your preexisting installation so you can switch back to it, but it's not fully tested.
+
+h2. Testing
+
+So you want to help out with testing pvm? Great! It's needed, I have tested it on Arch linux an nothing bad has happened yet. But I don't really use PHP on this machine so I don't have much to test with.
+If you test it out and find a bug, something that needs improvement or a new feature that you want. Open an issue here on github.
+
+h2. sudo
+You will need to have sudo access to the computer you want to test pvm on. This is because we do some linking with folders you shouldn't have acces to and such. This is probobly going to change so you can install without being sudo. We need some kind of wrapping so we know where to find the binaries. Or perhaps modify the path?
